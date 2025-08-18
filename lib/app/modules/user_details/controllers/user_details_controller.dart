@@ -8,20 +8,41 @@ class UserDetailsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    user = Get.arguments as UserModel;
+    try {
+      final arguments = Get.arguments;
+      print('🔍 Arguments type: ${arguments.runtimeType}');
+      print('🔍 Arguments value: $arguments');
+
+      if (arguments is UserModel) {
+        user = arguments;
+      } else if (arguments is Map<String, dynamic>) {
+        // If it's a map, create UserModel from it
+        user = UserModel.fromJson(arguments);
+      } else {
+        print('❌ Unexpected argument type: ${arguments.runtimeType}');
+        // Create a default user or go back
+        Get.back();
+        return;
+      }
+
+      print('✅ User loaded: ${user.name}');
+    } catch (e) {
+      print('❌ Error loading user: $e');
+      Get.back();
+    }
   }
 
   void navigateToChat() {
-    Get.toNamed(AppRoutes.chatRoom, arguments: {
-      'userId': user.id.toString(),
-      'userName': user.name,
-    });
+    Get.toNamed(
+      AppRoutes.chatRoom,
+      arguments: {'userId': user.id.toString(), 'userName': user.name},
+    );
   }
 
   void sendDateRequest() {
-    Get.toNamed(AppRoutes.dateRequests, arguments: {
-      'action': 'send',
-      'receiverId': user.id,
-    });
+    Get.toNamed(
+      AppRoutes.dateRequests,
+      arguments: {'action': 'send', 'receiverId': user.id},
+    );
   }
 }

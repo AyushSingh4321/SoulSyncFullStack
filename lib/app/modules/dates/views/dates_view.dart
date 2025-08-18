@@ -8,9 +8,7 @@ class DatesView extends GetView<DatesController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upcoming Dates'),
-      ),
+      appBar: AppBar(title: const Text('Upcoming Dates')),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -21,25 +19,16 @@ class DatesView extends GetView<DatesController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.calendar_today,
-                  size: 64,
-                  color: Colors.grey,
-                ),
+                Icon(Icons.calendar_today, size: 64, color: Colors.grey),
                 SizedBox(height: 16),
                 Text(
                   'No upcoming dates',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
                 ),
                 SizedBox(height: 8),
                 Text(
                   'Send date requests to plan your dates!',
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(color: Colors.grey),
                 ),
               ],
             ),
@@ -62,7 +51,7 @@ class DatesView extends GetView<DatesController> {
                       children: [
                         Expanded(
                           child: Text(
-                            'Date with ${date.senderName ?? date.receiverName ?? 'Unknown'}',
+                            'Date with ${controller.getOtherPersonName(date)}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -112,15 +101,9 @@ class DatesView extends GetView<DatesController> {
           const SizedBox(width: 12),
           Text(
             '$label: ',
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
           ),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 16),
-          ),
+          Text(value, style: const TextStyle(fontSize: 16)),
         ],
       ),
     );

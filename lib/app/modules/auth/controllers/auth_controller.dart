@@ -22,6 +22,14 @@ class AuthController extends GetxController {
   final showOtpField = false.obs;
   final obscurePassword = true.obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    print('🔧 AuthController initialized');
+    print('🔧 isLoading initial value: ${isLoading.value}');
+    print('🔧 isLogin initial value: ${isLogin.value}');
+  }
+
   void toggleAuthMode() {
     isLogin.value = !isLogin.value;
     showOtpField.value = false;
@@ -67,10 +75,7 @@ class AuthController extends GetxController {
       isLoading.value = true;
       final response = await _apiService.post(
         ApiConstants.validateOtp,
-        body: {
-          'email': emailController.text,
-          'otp': otpController.text,
-        },
+        body: {'email': emailController.text, 'otp': otpController.text},
       );
 
       if (response.statusCode == 200) {
@@ -105,6 +110,10 @@ class AuthController extends GetxController {
       if (response.statusCode == 200) {
         final token = response.body;
         await _storageService.setToken(token);
+
+        // Now fetch user profile to get user ID
+        await _fetchAndStoreUserProfile();
+
         Get.offAllNamed(AppRoutes.home);
       } else {
         final error = response.body;
@@ -112,6 +121,7 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       Get.snackbar('Error', 'Network error: $e');
+      print('Network error: $e');
     } finally {
       isLoading.value = false;
     }
@@ -131,6 +141,10 @@ class AuthController extends GetxController {
       if (response.statusCode == 200) {
         final token = response.body;
         await _storageService.setToken(token);
+
+        // Fetch user profile to get user ID
+        await _fetchAndStoreUserProfile();
+
         Get.offAllNamed(AppRoutes.home);
       } else {
         final error = response.body;
@@ -138,6 +152,22 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       Get.snackbar('Error', 'Network error: $e');
+    }
+  }
+
+  Future<void> _fetchAndStoreUserProfile() async {
+    try {
+      final profileResponse = await _apiService.get(ApiConstants.myProfile);
+      if (profileResponse.statusCode == 200) {
+        final profileData = jsonDecode(profileResponse.body);
+        final userId = profileData['id'].toString();
+        await _storageService.setUserId(userId);
+        print('🔐 User profile fetched - User ID: $userId');
+      } else {
+        print('⚠️ Failed to fetch user profile: ${profileResponse.statusCode}');
+      }
+    } catch (e) {
+      print('⚠️ Error fetching user profile: $e');
     }
   }
 

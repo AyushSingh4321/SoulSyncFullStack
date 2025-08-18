@@ -7,6 +7,7 @@ class SplashView extends GetView<SplashController> {
 
   @override
   Widget build(BuildContext context) {
+    print('🎨 Building SplashView');
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
       body: Center(
