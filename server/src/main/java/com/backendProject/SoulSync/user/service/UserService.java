@@ -2,6 +2,7 @@ package com.backendProject.SoulSync.user.service;
 
 import com.backendProject.SoulSync.auth.dto.SignupRequestDto;
 import com.backendProject.SoulSync.auth.service.JwtService;
+import com.backendProject.SoulSync.chatroom.repo.ChatRoomRepository;
 import com.backendProject.SoulSync.enums.UserStatus;
 import com.backendProject.SoulSync.user.dto.ChatUserDto;
 import com.backendProject.SoulSync.user.dto.UserDataDto;
@@ -24,15 +25,19 @@ import java.util.stream.Collectors;
 public class UserService {
 
     @Autowired
+    private ChatRoomRepository chatRepository;
+    @Autowired
     UserRepo repo;
+
 
     //==================USER CHAT APIs=========================
 //    helper
     private ChatUserDto toChatUserDto(UserModel user) {
         ChatUserDto dto = new ChatUserDto();
-        dto.setId(String.valueOf(user.getId())); // Or username if preferred
+        dto.setId(String.valueOf(user.getId()));
         dto.setName(user.getName());
         dto.setStatus(user.getStatus());
+        dto.setProfileImageUrl(user.getProfileImageUrl()); // ← Add this line
         return dto;
     }
 
@@ -479,6 +484,12 @@ public class UserService {
         LocalDateTime cutoffDate = LocalDateTime.now().minusDays(30);
 //        LocalDateTime cutoffDate = LocalDateTime.now().minusMinutes(5); //for testing purposes
         return repo.deleteOldDeactivatedUsers(cutoffDate);
+    }
+    public List<ChatUserDto> getChattedUsers() {
+        UserModel currentUser = getCurrentManagedUser();
+        Integer currentUserId = currentUser.getId();
+        List<UserModel> users = chatRepository.findChattedUsers(currentUserId);
+        return users.stream().map(this::toChatUserDto).collect(Collectors.toList());
     }
 
 //    private static class ScoredUser {

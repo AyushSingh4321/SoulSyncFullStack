@@ -5,9 +5,17 @@ import 'package:soulsync_frontend/app/routes/app_pages.dart';
 import 'package:soulsync_frontend/app/routes/app_routes.dart';
 import 'package:soulsync_frontend/app/core/theme/app_theme.dart';
 import 'package:soulsync_frontend/app/data/services/storage_service.dart';
+import 'package:soulsync_frontend/app/data/services/websocket_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize StorageService
+  await Get.putAsync(() => StorageService().init());
+
+  // Access and print userId after initialization
+  final storageService = Get.find<StorageService>();
+  print('Accessing userId: ${storageService.userId}');
 
   // Initialize services with error handling
   try {
@@ -18,7 +26,7 @@ void main() async {
     // Continue anyway to see what happens
   }
 
-  runApp(const SoulSyncApp());
+  runApp(SoulSyncApp());
 }
 
 Future<void> initServices() async {
@@ -28,6 +36,9 @@ Future<void> initServices() async {
     print('StorageService initialized successfully');
     Get.put(ApiService());
     print('ApiService initialized successfully');
+    Get.put(WebSocketService());
+    await Get.find<WebSocketService>().connect();
+    print('WebSocketService initialized and connected successfully');
     print('All services initialized');
   } catch (e) {
     print('Error initializing services: $e');

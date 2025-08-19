@@ -10,6 +10,15 @@ public class ChatUserDto {
     private String id;
     private String name;
     private UserStatus status;
+    private String profileImageUrl;
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
 
     public String getId() {
         return id;
@@ -41,27 +50,21 @@ public class ChatUserDto {
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", status=" + status +
+                ", profileImageUrl='" + profileImageUrl + '\'' +
                 '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ChatUserDto)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         ChatUserDto that = (ChatUserDto) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(name, that.name) &&
-                status == that.status;
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && status == that.status && Objects.equals(profileImageUrl, that.profileImageUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, status);
+        return Objects.hash(id, name, status, profileImageUrl);
     }
-
-
-
-
 }
 
 

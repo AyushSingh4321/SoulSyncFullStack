@@ -122,6 +122,14 @@ public ResponseEntity<?> discoverUsers(
         }
     }
 
+    @GetMapping("/chatted-with")
+    public ResponseEntity<?> getChattedUsers() {
+        try {
+            return ResponseEntity.ok(userService.getChattedUsers());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error fetching chatted users");
+        }
+    }
 //    To add search functionality
     @GetMapping("/search")
     public ResponseEntity<?> searchUsers(@RequestParam String keyword)

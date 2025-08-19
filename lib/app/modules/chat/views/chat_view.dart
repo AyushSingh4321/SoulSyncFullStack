@@ -65,7 +65,7 @@ class ChatView extends GetView<ChatController> {
               subtitle: const Text('Tap to start chatting'),
               onTap: () {
                 Get.toNamed(AppRoutes.chatRoom, arguments: {
-                  'userId': user.id.toString(),
+                  'userId': user.id,
                   'userName': user.name,
                 });
               },

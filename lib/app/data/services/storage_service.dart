@@ -15,7 +15,11 @@ class StorageService extends GetxService {
   Future<bool> removeToken() => _prefs.remove('token');
 
   // User data
-  String? get userId => _prefs.getString('userId');
+  String? get userId {
+  final id = _prefs.getString('userId');
+  print('Getting userId: $id'); // Auto-trigger debug
+  return id;
+}
   Future<bool> setUserId(String userId) => _prefs.setString('userId', userId);
   Future<bool> removeUserId() => _prefs.remove('userId');
 

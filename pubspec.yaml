@@ -36,6 +36,8 @@ dependencies:
   
   # HTTP Client
   http: ^1.1.0
+  stomp_dart_client: ^2.0.0
+  web_socket_channel: ^2.4.0
   
   # UI Components
   cupertino_icons: ^1.0.8

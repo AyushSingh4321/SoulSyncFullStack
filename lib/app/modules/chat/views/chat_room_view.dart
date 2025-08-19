@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:soulsync_frontend/app/data/services/storage_service.dart';
 import 'package:soulsync_frontend/app/modules/chat/controllers/chat_controller.dart';
 
 class ChatRoomView extends GetView<ChatController> {
@@ -7,18 +8,26 @@ class ChatRoomView extends GetView<ChatController> {
 
   @override
   Widget build(BuildContext context) {
+    final storageService = Get.find<StorageService>();
+    final currentUserId = storageService.userId ?? '';
     final arguments = Get.arguments as Map<String, dynamic>;
     final userId = arguments['userId'] as String;
     final userName = arguments['userName'] as String?;
     final messageController = TextEditingController();
 
     // Load messages when entering chat room
-    controller.loadMessages('currentUserId', userId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.loadMessages(currentUserId, userId);
+    });
+
+    if (currentUserId.isEmpty) {
+      // Show an error, redirect, or prevent loading messages
+      print('Error: currentUserId is not set!');
+      // Optionally return a placeholder widget or redirect
+    }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(userName ?? 'Chat'),
-      ),
+      appBar: AppBar(title: Text(userName ?? 'Chat')),
       body: Column(
         children: [
           Expanded(
@@ -32,7 +41,9 @@ class ChatRoomView extends GetView<ChatController> {
                 itemCount: controller.messages.length,
                 itemBuilder: (context, index) {
                   final message = controller.messages.reversed.toList()[index];
-                  final isMe = message.senderId == 'currentUserId'; // Get from storage
+                  final isMe =
+                      message.senderId == currentUserId; // Get from storage
+                  print('vvvvvvvvvv ${message.senderId} ggggggggggg ${currentUserId}vvvvvvvvvv ${isMe}');
 
                   return Container(
                     margin: const EdgeInsets.symmetric(
@@ -40,9 +51,10 @@ class ChatRoomView extends GetView<ChatController> {
                       horizontal: 8,
                     ),
                     child: Row(
-                      mainAxisAlignment: isMe
-                          ? MainAxisAlignment.end
-                          : MainAxisAlignment.start,
+                      mainAxisAlignment:
+                          isMe
+                              ? MainAxisAlignment.end
+                              : MainAxisAlignment.start,
                       children: [
                         Container(
                           constraints: BoxConstraints(
@@ -53,9 +65,10 @@ class ChatRoomView extends GetView<ChatController> {
                             vertical: 10,
                           ),
                           decoration: BoxDecoration(
-                            color: isMe
-                                ? Theme.of(context).colorScheme.primary
-                                : Colors.grey[300],
+                            color:
+                                isMe
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Colors.grey[300],
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -94,9 +107,12 @@ class ChatRoomView extends GetView<ChatController> {
                 const SizedBox(width: 8),
                 FloatingActionButton(
                   mini: true,
-                  onPressed: () {
+                  onPressed: () async {
                     if (messageController.text.trim().isNotEmpty) {
-                      controller.sendMessage(messageController.text.trim(), userId);
+                      await controller.sendMessage(
+                        messageController.text.trim(),
+                        userId,
+                      );
                       messageController.clear();
                     }
                   },
