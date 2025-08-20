@@ -18,6 +18,7 @@ class WebSocketService extends GetxService {
       config: StompConfig(
         url: 'ws://10.0.2.2:8080/ws',
         onConnect: onConnect,
+        reconnectDelay: const Duration(seconds: 5),
         beforeConnect: () async {
           print('Connecting to WebSocket...');
         },
@@ -34,14 +35,19 @@ class WebSocketService extends GetxService {
     print('Connected to WebSocket');
     final userId = _storageService.userId;
     _stompClient!.subscribe(
-      destination: '/user/$userId/queue/messages',
+      // destination: '/user/$userId/queue/messages',
+      destination: '/user/queue/messages',
       callback: (frame) {
         print('Received message: ${frame.body}');
 
         // Parse and call the callback
         if (onMessageReceived != null && frame.body != null) {
+          try{
           final messageData = jsonDecode(frame.body!);
           onMessageReceived!(messageData);
+          } catch (e) {
+            print('Error parsing WebSocket message: $e');
+          }
         }
       },
     );
@@ -60,6 +66,12 @@ class WebSocketService extends GetxService {
 
   void disconnect() {
     _stompClient?.deactivate();
+  }
+
+  @override
+  void onClose() {
+    disconnect();
+    super.onClose();
   }
 
   // Method to set callback

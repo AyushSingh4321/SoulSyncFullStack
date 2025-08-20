@@ -32,7 +32,7 @@ void main() async {
 Future<void> initServices() async {
   try {
     print('Starting service initialization...');
-    await Get.putAsync(() => StorageService().init());
+    // await Get.putAsync(() => StorageService().init());
     print('StorageService initialized successfully');
     Get.put(ApiService());
     print('ApiService initialized successfully');
