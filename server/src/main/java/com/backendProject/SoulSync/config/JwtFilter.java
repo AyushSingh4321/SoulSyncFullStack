@@ -40,6 +40,13 @@ public class JwtFilter extends OncePerRequestFilter {
                     Optional<UserModel> optionalUser = userRepo.findByEmail(email);
                     if (optionalUser.isPresent()) {
                         UserModel userDetails = optionalUser.get();
+                        if(!userDetails.getActive())
+                        {
+                               response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                response.getWriter().write("User account is inactive.");
+                                response.getWriter().flush();
+                                return;
+                        }
                         System.out.println("Step 2 userDetails id,email,password : " + userDetails.getId() + "," + userDetails.getEmail() + "," + userDetails.getPassword());
                         if (jwtService.validateToken(token, userDetails)) {
                             System.out.println("Step 3 validation");

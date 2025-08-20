@@ -4,6 +4,7 @@ import com.backendProject.SoulSync.auth.service.JwtService;
 import com.backendProject.SoulSync.user.model.UserModel;
 import com.backendProject.SoulSync.user.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,10 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
             if (optionalUser.isPresent()) {
                 UserModel user = optionalUser.get();
+                if (!user.getActive()) {
+                    response.setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return false; // Block handshake for inactive users
+                }
                 System.out.println("Interceptor 3 "+user.getEmail());
                 // Save Principal in attributes so it can be set later
                 attributes.put("user", new StompPrincipal(String.valueOf(user.getId()))); // this is the key part

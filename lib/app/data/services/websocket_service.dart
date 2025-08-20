@@ -42,9 +42,9 @@ class WebSocketService extends GetxService {
 
         // Parse and call the callback
         if (onMessageReceived != null && frame.body != null) {
-          try{
-          final messageData = jsonDecode(frame.body!);
-          onMessageReceived!(messageData);
+          try {
+            final messageData = jsonDecode(frame.body!);
+            onMessageReceived!(messageData);
           } catch (e) {
             print('Error parsing WebSocket message: $e');
           }
@@ -54,14 +54,18 @@ class WebSocketService extends GetxService {
   }
 
   void sendMessage(String recipientId, String content) {
-    final currentUserId = _storageService.userId;
-    final message = {
-      'senderId': currentUserId,
-      'recipientId': recipientId,
-      'content': content,
-    };
+    try {
+      final currentUserId = _storageService.userId;
+      final message = {
+        'senderId': currentUserId,
+        'recipientId': recipientId,
+        'content': content,
+      };
 
-    _stompClient!.send(destination: '/app/chat', body: jsonEncode(message));
+      _stompClient!.send(destination: '/app/chat', body: jsonEncode(message));
+    } catch (e) {
+      print('Error sending WebSocket message: $e');
+    }
   }
 
   void disconnect() {
