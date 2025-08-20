@@ -13,6 +13,7 @@ class ChatRoomView extends GetView<ChatController> {
     final arguments = Get.arguments as Map<String, dynamic>;
     final userId = arguments['userId'] as String;
     final userName = arguments['userName'] as String?;
+    final userStatus = arguments['userStatus'] as String?; 
     final messageController = TextEditingController();
 
     // Load messages when entering chat room
@@ -27,7 +28,20 @@ class ChatRoomView extends GetView<ChatController> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(userName ?? 'Chat')),
+      appBar: AppBar( // In AppBar title:
+title: Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Text(userName ?? 'Chat'),
+    Text(
+      userStatus == 'ONLINE' ? 'Online' : 'Offline',
+      style: TextStyle(
+        fontSize: 12,
+        color: userStatus == 'ONLINE' ? Colors.green : Colors.grey,
+      ),
+    ),
+  ],
+),),
       body: Column(
         children: [
           Expanded(

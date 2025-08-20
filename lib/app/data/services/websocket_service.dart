@@ -34,6 +34,9 @@ class WebSocketService extends GetxService {
   void onConnect(StompFrame frame) {
     print('Connected to WebSocket');
     final userId = _storageService.userId;
+   if (userId != null) {
+  setUserOnline(userId);
+}
     _stompClient!.subscribe(
       // destination: '/user/$userId/queue/messages',
       destination: '/user/queue/messages',
@@ -69,11 +72,18 @@ class WebSocketService extends GetxService {
   }
 
   void disconnect() {
+print('🔴 disconnect() called');
+    final userId = _storageService.userId;
+  if (userId != null) {
+      print('🔴 Setting user $userId to OFFLINE');
+    setUserOffline(userId);
+  }
     _stompClient?.deactivate();
   }
 
   @override
   void onClose() {
+      print('🔴 WebSocketService onClose() called');
     disconnect();
     super.onClose();
   }
@@ -82,4 +92,45 @@ class WebSocketService extends GetxService {
   void setMessageCallback(Function(Map<String, dynamic>) callback) {
     onMessageReceived = callback;
   }
+
+  // In WebSocketService
+void setUserOnline(String userId) {
+  // _stompClient?.send(
+  //   destination: '/app/user.connectUser',
+  //   body: userId,
+  // );
+    try {
+    if (_stompClient != null && _stompClient!.isActive) {
+      _stompClient!.send(
+        destination: '/app/user.connectUser',
+        body: userId,
+      );
+      print('✅ Online message sent successfully');
+    } else {
+      print('⚠️ WebSocket not active, cannot send online message');
+    }
+  } catch (e) {
+    print('❌ Error sending online message: $e');
+  }
+}
+
+void setUserOffline(String userId) {
+  // _stompClient?.send(
+  //   destination: '/app/user.disconnectUser', 
+  //   body: userId,
+  // );
+    try {
+    if (_stompClient != null && _stompClient!.isActive) {
+      _stompClient!.send(
+        destination: '/app/user.disconnectUser', 
+        body: userId,
+      );
+      print('✅ Offline message sent successfully');
+    } else {
+      print('⚠️ WebSocket not active, cannot send offline message');
+    }
+  } catch (e) {
+    print('❌ Error sending offline message: $e');
+  }
+}
 }

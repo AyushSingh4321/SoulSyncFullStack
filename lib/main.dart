@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:soulsync_frontend/app/core/lifecycle/app_lifecycle_observer.dart';
 import 'package:soulsync_frontend/app/data/services/api_service.dart';
 import 'package:soulsync_frontend/app/routes/app_pages.dart';
 import 'package:soulsync_frontend/app/routes/app_routes.dart';
@@ -10,6 +11,8 @@ import 'package:soulsync_frontend/app/data/services/websocket_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Life Cycle Observer
+  WidgetsBinding.instance.addObserver(AppLifecycleObserver());
   // Initialize StorageService
   await Get.putAsync(() => StorageService().init());
 

@@ -10,9 +10,7 @@ class ChatView extends GetView<ChatController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chats'),
-      ),
+      appBar: AppBar(title: const Text('Chats')),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -23,25 +21,16 @@ class ChatView extends GetView<ChatController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.chat_bubble_outline,
-                  size: 64,
-                  color: Colors.grey,
-                ),
+                Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
                 SizedBox(height: 16),
                 Text(
                   'No chats yet',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
                 ),
                 SizedBox(height: 8),
                 Text(
                   'Start liking users to begin chatting!',
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(color: Colors.grey),
                 ),
               ],
             ),
@@ -53,21 +42,52 @@ class ChatView extends GetView<ChatController> {
           itemBuilder: (context, index) {
             final user = controller.chatUsers[index];
             return ListTile(
-              leading: CircleAvatar(
-                backgroundImage: user.profileImageUrl != null
-                    ? CachedNetworkImageProvider(user.profileImageUrl!)
-                    : null,
-                child: user.profileImageUrl == null
-                    ? const Icon(Icons.person)
-                    : null,
+              // leading: CircleAvatar(
+              //   backgroundImage: user.profileImageUrl != null
+              //       ? CachedNetworkImageProvider(user.profileImageUrl!)
+              //       : null,
+              //   child: user.profileImageUrl == null
+              //       ? const Icon(Icons.person)
+              //       : null,
+              // ),
+              leading: Stack(
+                children: [
+                  CircleAvatar(
+                    backgroundImage:
+                        user.profileImageUrl != null
+                            ? CachedNetworkImageProvider(user.profileImageUrl!)
+                            : null,
+                    child:
+                        user.profileImageUrl == null
+                            ? const Icon(Icons.person)
+                            : null,
+                  ),
+                  // Online/Offline indicator
+                  if (user.status == 'ONLINE')
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               title: Text(user.name ?? 'Unknown'),
               subtitle: const Text('Tap to start chatting'),
               onTap: () {
-                Get.toNamed(AppRoutes.chatRoom, arguments: {
-                  'userId': user.id,
-                  'userName': user.name,
-                });
+                Get.toNamed(
+                  AppRoutes.chatRoom,
+                  arguments: {'userId': user.id, 'userName': user.name,
+                  'userStatus': user.status
+                  },
+                );
               },
             );
           },
