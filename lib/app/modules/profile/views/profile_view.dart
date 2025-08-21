@@ -16,10 +16,10 @@ class ProfileView extends GetView<ProfileController> {
             icon: const Icon(Icons.edit),
             onPressed: controller.navigateToEditProfile,
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: controller.logout,
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.logout),
+          //   onPressed: controller.logout,
+          // ),
         ],
       ),
       body: Obx(() {

@@ -122,10 +122,17 @@ class ProfileController extends GetxController {
     Get.toNamed(AppRoutes.editProfile);
   }
 
-  Future<void> logout() async {
-    await _storageService.clearAll();
-    Get.offAllNamed(AppRoutes.auth);
-  }
+  // Future<void> logout() async {
+  //   try{
+  //   // Set user offline before logout
+  //   _webSocketService.disconnect(); 
+  //   await _storageService.clearAll();
+  //   Get.offAllNamed(AppRoutes.auth);
+  //    print('✅ User logged out successfully');
+  //   } catch (e) {
+  //     Get.snackbar('Error', 'Failed to logout: $e');
+  //   }
+  // }
 
   @override
   void onClose() {

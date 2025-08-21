@@ -4,11 +4,13 @@ import 'package:get/get.dart';
 import 'package:soulsync_frontend/app/core/constants/api_constants.dart';
 import 'package:soulsync_frontend/app/data/services/api_service.dart';
 import 'package:soulsync_frontend/app/data/services/storage_service.dart';
+import 'package:soulsync_frontend/app/data/services/websocket_service.dart';
 import 'package:soulsync_frontend/app/routes/app_routes.dart';
 
 class AuthController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
   final StorageService _storageService = Get.find<StorageService>();
+  final WebSocketService _webSocketService = Get.find<WebSocketService>();
 
   // Form controllers
   final emailController = TextEditingController();
@@ -28,6 +30,7 @@ class AuthController extends GetxController {
     print('🔧 AuthController initialized');
     print('🔧 isLoading initial value: ${isLoading.value}');
     print('🔧 isLogin initial value: ${isLogin.value}');
+    _clearControllers();
   }
 
   void toggleAuthMode() {
@@ -59,7 +62,8 @@ class AuthController extends GetxController {
         Get.snackbar('Error', 'Failed to send OTP');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Network error: $e');
+      print('Error Network error: $e');
+      Get.snackbar('Error', 'Network error occurred');
     } finally {
       isLoading.value = false;
     }
@@ -85,7 +89,8 @@ class AuthController extends GetxController {
         Get.snackbar('Error', 'Invalid OTP');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Network error: $e');
+      print('Error Network error: $e');
+      Get.snackbar('Error', 'Network error occurred');
     } finally {
       isLoading.value = false;
     }
@@ -113,15 +118,17 @@ class AuthController extends GetxController {
 
         // Now fetch user profile to get user ID
         await _fetchAndStoreUserProfile();
-
+        // Set user online after successful login
+        await _webSocketService.connect();
+        print('🟢 User set to ONLINE after login');
         Get.offAllNamed(AppRoutes.home);
       } else {
         final error = response.body;
         Get.snackbar('Error', error);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Network error: $e');
-      print('Network error: $e');
+      print('Error Network error: $e');
+      Get.snackbar('Error', 'Network error occurred');
     } finally {
       isLoading.value = false;
     }
@@ -144,14 +151,32 @@ class AuthController extends GetxController {
 
         // Fetch user profile to get user ID
         await _fetchAndStoreUserProfile();
-
+        // Set user online after successful login
+        await _webSocketService.connect();
+        print('🟢 User set to ONLINE after signup');
         Get.offAllNamed(AppRoutes.home);
       } else {
         final error = response.body;
         Get.snackbar('Error', error);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Network error: $e');
+      print('Error Network error: $e');
+      Get.snackbar('Error', 'Network error occurred');
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      // Set user offline before logout
+      _webSocketService.disconnect();
+      print('🔴 User set to OFFLINE after logout');
+      await _storageService.clearAll();
+      _clearControllers();
+      Get.offAllNamed(AppRoutes.auth);
+      print('✅ User logged out successfully');
+    } catch (e) {
+      print('Error Network error: $e');
+      Get.snackbar('Error', 'Network error occurred');
     }
   }
 

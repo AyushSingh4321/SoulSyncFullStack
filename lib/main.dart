@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:soulsync_frontend/app/core/lifecycle/app_lifecycle_observer.dart';
 import 'package:soulsync_frontend/app/data/services/api_service.dart';
+import 'package:soulsync_frontend/app/modules/auth/controllers/auth_controller.dart';
 import 'package:soulsync_frontend/app/routes/app_pages.dart';
 import 'package:soulsync_frontend/app/routes/app_routes.dart';
 import 'package:soulsync_frontend/app/core/theme/app_theme.dart';
@@ -15,7 +16,6 @@ void main() async {
   WidgetsBinding.instance.addObserver(AppLifecycleObserver());
   // Initialize StorageService
   await Get.putAsync(() => StorageService().init());
-
   // Access and print userId after initialization
   final storageService = Get.find<StorageService>();
   print('Accessing userId: ${storageService.userId}');
@@ -34,13 +34,11 @@ void main() async {
 
 Future<void> initServices() async {
   try {
-    print('Starting service initialization...');
-    // await Get.putAsync(() => StorageService().init());
-    print('StorageService initialized successfully');
     Get.put(ApiService());
     print('ApiService initialized successfully');
     Get.put(WebSocketService());
-    await Get.find<WebSocketService>().connect();
+    Get.put(AuthController());
+    // await Get.find<WebSocketService>().connect();
     print('WebSocketService initialized and connected successfully');
     print('All services initialized');
   } catch (e) {

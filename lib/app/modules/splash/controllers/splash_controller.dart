@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:soulsync_frontend/app/data/services/websocket_service.dart';
 import 'package:soulsync_frontend/app/routes/app_routes.dart';
 import 'package:soulsync_frontend/app/data/services/storage_service.dart';
 
@@ -25,6 +26,7 @@ class SplashController extends GetxController {
 
       if (token != null && token.isNotEmpty) {
         print('🏠 Token found, navigating to home');
+        await Get.find<WebSocketService>().connect();
         Get.offAllNamed(AppRoutes.home);
       } else {
         print('🔐 No token, navigating to auth');

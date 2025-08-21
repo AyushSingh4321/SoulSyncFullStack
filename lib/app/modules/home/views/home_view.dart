@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:soulsync_frontend/app/modules/auth/controllers/auth_controller.dart';
 import 'package:soulsync_frontend/app/modules/home/controllers/home_controller.dart';
 import 'package:soulsync_frontend/app/data/models/user_model.dart';
 
 class HomeView extends GetView<HomeController> {
-  const HomeView({super.key});
+  HomeView({super.key});
+  final authController = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +90,16 @@ class HomeView extends GetView<HomeController> {
             leading: const Icon(Icons.date_range),
             title: const Text('Date Requests'),
             onTap: controller.navigateToDateRequests,
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Logout'),
+            onTap: () async {
+              
+              await authController.logout().then((_) {
+                Get.back(); // Close the drawer after logout
+              });
+            },
           ),
           ListTile(
             leading: const Icon(Icons.delete),
