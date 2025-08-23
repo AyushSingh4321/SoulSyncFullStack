@@ -35,13 +35,13 @@ class HomeController extends GetxController {
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         final newUsers = data.map((json) => UserModel.fromJson(json)).toList();
-        
+
         if (refresh) {
           users.assignAll(newUsers);
         } else {
           users.addAll(newUsers);
         }
-        
+
         currentPage.value++;
       }
     } catch (e) {
@@ -54,7 +54,7 @@ class HomeController extends GetxController {
   Future<void> likeUser(int userId) async {
     try {
       final response = await _apiService.post('${ApiConstants.like}/$userId');
-      
+
       if (response.statusCode == 200) {
         Get.snackbar('Success', response.body);
         _moveToNextUser();
@@ -105,5 +105,22 @@ class HomeController extends GetxController {
 
   void navigateToChat() {
     Get.toNamed(AppRoutes.chat);
+  }
+
+  Future<void> reportUser(int userId, String userName) async {
+    try {
+      final response = await _apiService.post(
+        '${ApiConstants.reportUser}/$userId',
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar('Success', 'User $userName has been reported');
+        _moveToNextUser(); // Move to next user after reporting
+      } else {
+        Get.snackbar('Error', 'Failed to report user');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Network error');
+    }
   }
 }

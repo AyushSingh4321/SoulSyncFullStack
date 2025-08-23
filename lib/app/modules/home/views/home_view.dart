@@ -36,23 +36,15 @@ class HomeView extends GetView<HomeController> {
         }
 
         if (controller.users.isEmpty) {
-          return const Center(
-            child: Text('No more users to show'),
-          );
+          return const Center(child: Text('No more users to show'));
         }
 
         return _buildUserCard(context);
       }),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: 'Chats',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
         ],
         onTap: (index) {
           if (index == 1) {
@@ -69,9 +61,7 @@ class HomeView extends GetView<HomeController> {
         padding: EdgeInsets.zero,
         children: [
           const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Color(0xFFE91E63),
-            ),
+            decoration: BoxDecoration(color: Color(0xFFE91E63)),
             child: Text(
               'SoulSync',
               style: TextStyle(
@@ -95,7 +85,6 @@ class HomeView extends GetView<HomeController> {
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
             onTap: () async {
-              
               await authController.logout().then((_) {
                 Get.back(); // Close the drawer after logout
               });
@@ -121,7 +110,7 @@ class HomeView extends GetView<HomeController> {
       }
 
       final user = controller.users[controller.currentUserIndex.value];
-      
+
       return GestureDetector(
         onTap: () => controller.viewUserDetails(user),
         child: Container(
@@ -135,38 +124,85 @@ class HomeView extends GetView<HomeController> {
               children: [
                 Expanded(
                   flex: 3,
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                      child: user.profileImageUrl != null
-                          ? CachedNetworkImage(
-                              imageUrl: user.profileImageUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                color: Colors.grey[300],
-                                child: const Icon(
-                                  Icons.person,
-                                  size: 100,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            )
-                          : Container(
-                              color: Colors.grey[300],
-                              child: const Icon(
-                                Icons.person,
-                                size: 100,
-                                color: Colors.grey,
-                              ),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
+                          child:
+                              user.profileImageUrl != null
+                                  ? CachedNetworkImage(
+                                    imageUrl: user.profileImageUrl!,
+                                    fit: BoxFit.cover,
+                                    placeholder:
+                                        (context, url) => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                    errorWidget:
+                                        (context, url, error) => Container(
+                                          color: Colors.grey[300],
+                                          child: const Icon(
+                                            Icons.person,
+                                            size: 100,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                  )
+                                  : Container(
+                                    color: Colors.grey[300],
+                                    child: const Icon(
+                                      Icons.person,
+                                      size: 100,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: PopupMenuButton<String>(
+                          icon: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                    ),
+                            child: const Icon(
+                              Icons.more_vert,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          onSelected: (value) {
+                            if (value == 'report') {
+                              _showReportDialog(context, user);
+                            }
+                          },
+                          itemBuilder:
+                              (BuildContext context) => [
+                                const PopupMenuItem<String>(
+                                  value: 'report',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.report, color: Colors.red),
+                                      SizedBox(width: 8),
+                                      Text('Report User'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Expanded(
@@ -254,5 +290,33 @@ class HomeView extends GetView<HomeController> {
         ),
       );
     });
+  }
+
+  void _showReportDialog(BuildContext context, UserModel user) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Report User'),
+          content: Text(
+            'Are you sure you want to report ${user.name ?? 'this user'}?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                controller.reportUser(user.id!, user.name ?? 'User');
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Report'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
