@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:soulsync_frontend/app/core/constants/api_constants.dart';
 import 'package:soulsync_frontend/app/data/services/api_service.dart';
 import 'package:soulsync_frontend/app/data/models/user_model.dart';
+import 'package:soulsync_frontend/app/routes/app_routes.dart';
 
 class LikedUsersController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
@@ -20,10 +21,12 @@ class LikedUsersController extends GetxController {
     try {
       isLoading.value = true;
       final response = await _apiService.get(ApiConstants.liked);
-      
+
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        likedUsers.assignAll(data.map((json) => UserModel.fromJson(json)).toList());
+        likedUsers.assignAll(
+          data.map((json) => UserModel.fromJson(json)).toList(),
+        );
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load liked users: $e');
@@ -35,7 +38,7 @@ class LikedUsersController extends GetxController {
   Future<void> unlikeUser(int userId) async {
     try {
       final response = await _apiService.post('${ApiConstants.like}/$userId');
-      
+
       if (response.statusCode == 200) {
         likedUsers.removeWhere((user) => user.id == userId);
         Get.snackbar('Success', 'User unliked');
@@ -43,5 +46,9 @@ class LikedUsersController extends GetxController {
     } catch (e) {
       Get.snackbar('Error', 'Failed to unlike user: $e');
     }
+  }
+
+  void viewUserDetails(UserModel user) {
+    Get.toNamed(AppRoutes.userDetails, arguments: user);
   }
 }
