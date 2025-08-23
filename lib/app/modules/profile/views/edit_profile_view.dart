@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:soulsync_frontend/app/modules/profile/controllers/profile_controller.dart';
@@ -12,8 +14,10 @@ class EditProfileView extends GetView<ProfileController> {
         title: const Text('Edit Profile'),
         actions: [
           Obx(() => TextButton(
-            onPressed: controller.isLoading.value ? null : controller.updateProfile,
-            child: controller.isLoading.value
+            onPressed: (controller.isLoading.value || controller.isUploadingImage.value) 
+                ? null 
+                : controller.updateProfile,
+            child: (controller.isLoading.value || controller.isUploadingImage.value)
                 ? const SizedBox(
                     width: 20,
                     height: 20,
@@ -27,6 +31,61 @@ class EditProfileView extends GetView<ProfileController> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // Profile image
+            Center(
+              child: Obx(() {
+                return Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundImage: _getProfileImage(),
+                      child: _getProfileImage() == null
+                          ? const Icon(Icons.person, size: 60)
+                          : null,
+                    ),
+                    if (controller.isUploadingImage.value)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: controller.showImagePickerOptions,
+                        child: CircleAvatar(
+                          radius: 18,
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          child: const Icon(
+                            Icons.camera_alt,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tap camera icon to change photo',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 24),
             // Basic Information
             Card(
               child: Padding(
@@ -218,5 +277,15 @@ class EditProfileView extends GetView<ProfileController> {
         ),
       ),
     );
+  }
+
+  ImageProvider? _getProfileImage() {
+    // Priority: Selected image file > Current user profile image > null
+    if (controller.selectedImageFile.value != null) {
+      return FileImage(controller.selectedImageFile.value!);
+    } else if (controller.user.value?.profileImageUrl != null) {
+      return CachedNetworkImageProvider(controller.user.value!.profileImageUrl!);
+    }
+    return null;
   }
 }

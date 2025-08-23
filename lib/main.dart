@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:soulsync_frontend/app/core/lifecycle/app_lifecycle_observer.dart';
 import 'package:soulsync_frontend/app/data/services/api_service.dart';
@@ -28,7 +29,7 @@ void main() async {
     print('❌ Service initialization failed: $e');
     // Continue anyway to see what happens
   }
-
+  await dotenv.load(fileName: "server/.env");
   runApp(SoulSyncApp());
 }
 

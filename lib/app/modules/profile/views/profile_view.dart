@@ -16,10 +16,6 @@ class ProfileView extends GetView<ProfileController> {
             icon: const Icon(Icons.edit),
             onPressed: controller.navigateToEditProfile,
           ),
-          // IconButton(
-          //   icon: const Icon(Icons.logout),
-          //   onPressed: controller.logout,
-          // ),
         ],
       ),
       body: Obx(() {
@@ -48,19 +44,6 @@ class ProfileView extends GetView<ProfileController> {
                       child: user.profileImageUrl == null
                           ? const Icon(Icons.person, size: 60)
                           : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        child: const Icon(
-                          Icons.camera_alt,
-                          size: 18,
-                          color: Colors.white,
-                        ),
-                      ),
                     ),
                   ],
                 ),
