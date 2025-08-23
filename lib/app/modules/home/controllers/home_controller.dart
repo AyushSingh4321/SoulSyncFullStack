@@ -13,6 +13,7 @@ class HomeController extends GetxController {
   final isLoading = false.obs;
   final currentPage = 0.obs;
   final pageSize = 5;
+  final currentTabIndex = 0.obs; // 0 = Home, 1 = Chat
 
   @override
   void onInit() {
@@ -105,6 +106,10 @@ class HomeController extends GetxController {
 
   void navigateToChat() {
     Get.toNamed(AppRoutes.chat);
+  }
+
+  void changeTab(int index) {
+    currentTabIndex.value = index;
   }
 
   Future<void> reportUser(int userId, String userName) async {

@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:soulsync_frontend/app/modules/auth/controllers/auth_controller.dart';
 import 'package:soulsync_frontend/app/modules/home/controllers/home_controller.dart';
+import 'package:soulsync_frontend/app/modules/chat/controllers/chat_controller.dart';
 import 'package:soulsync_frontend/app/data/models/user_model.dart';
+import 'package:soulsync_frontend/app/routes/app_routes.dart';
 
 class HomeView extends GetView<HomeController> {
   HomeView({super.key});
@@ -31,26 +33,33 @@ class HomeView extends GetView<HomeController> {
       ),
       drawer: _buildDrawer(context),
       body: Obx(() {
-        if (controller.isLoading.value && controller.users.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (controller.users.isEmpty) {
-          return const Center(child: Text('No more users to show'));
-        }
-
-        return _buildUserCard(context);
-      }),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
-        ],
-        onTap: (index) {
-          if (index == 1) {
-            controller.navigateToChat();
+        if (controller.currentTabIndex.value == 0) {
+          // Home Tab
+          if (controller.isLoading.value && controller.users.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
           }
-        },
+
+          if (controller.users.isEmpty) {
+            return const Center(child: Text('No more users to show'));
+          }
+
+          return _buildUserCard(context);
+        } else {
+          // Chat Tab
+          return _buildChatContent();
+        }
+      }),
+      bottomNavigationBar: Obx(
+        () => BottomNavigationBar(
+          currentIndex: controller.currentTabIndex.value,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
+          ],
+          onTap: (index) {
+            controller.changeTab(index);
+          },
+        ),
       ),
     );
   }
@@ -288,6 +297,87 @@ class HomeView extends GetView<HomeController> {
             ),
           ),
         ),
+      );
+    });
+  }
+
+  Widget _buildChatContent() {
+    final ChatController chatController = Get.find<ChatController>();
+
+    return Obx(() {
+      if (chatController.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (chatController.chatUsers.isEmpty) {
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
+              Text(
+                'No chats yet',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Start liking users to begin chatting!',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return ListView.builder(
+        itemCount: chatController.chatUsers.length,
+        itemBuilder: (context, index) {
+          final user = chatController.chatUsers[index];
+          return ListTile(
+            leading: Stack(
+              children: [
+                CircleAvatar(
+                  backgroundImage:
+                      user.profileImageUrl != null
+                          ? CachedNetworkImageProvider(user.profileImageUrl!)
+                          : null,
+                  child:
+                      user.profileImageUrl == null
+                          ? const Icon(Icons.person)
+                          : null,
+                ),
+                // Online/Offline indicator
+                if (user.status == 'ONLINE')
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            title: Text(user.name ?? 'Unknown'),
+            subtitle: const Text('Tap to start chatting'),
+            onTap: () {
+              Get.toNamed(
+                AppRoutes.chatRoom,
+                arguments: {
+                  'userId': user.id,
+                  'userName': user.name,
+                  'userStatus': user.status,
+                },
+              );
+            },
+          );
+        },
       );
     });
   }
