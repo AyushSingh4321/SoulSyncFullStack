@@ -59,7 +59,11 @@ class DateRequestsController extends GetxController {
   Future<void> loadDateRequests() async {
     try {
       isLoading.value = true;
+      print('📡 Loading date requests...');
       final response = await _apiService.get(ApiConstants.allRequests);
+
+      print('📡 Load Requests Response - Status: ${response.statusCode}');
+      print('📡 Load Requests Response - Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -72,8 +76,13 @@ class DateRequestsController extends GetxController {
         receivedRequests.assignAll(
           received.map((json) => DateRequestModel.fromJson(json)).toList(),
         );
+
+        print(
+          '✅ Loaded ${sentRequests.length} sent requests and ${receivedRequests.length} received requests',
+        );
       }
     } catch (e) {
+      print('❌ Error loading date requests: $e');
       Get.snackbar('Error', 'Failed to load date requests: $e');
     } finally {
       isLoading.value = false;
@@ -85,7 +94,7 @@ class DateRequestsController extends GetxController {
         timeController.text.isEmpty ||
         venueController.text.isEmpty) {
       Get.snackbar('Error', 'Please fill all fields');
-      return;
+      return; // Don't close dialog, let user fill the fields
     }
 
     try {
@@ -99,14 +108,62 @@ class DateRequestsController extends GetxController {
       );
 
       if (response.statusCode == 200) {
+        print('✅ Success Response: ${response.body}');
+        Get.back(); // Close dialog first
         Get.snackbar('Success', 'Date request sent successfully');
-        Get.back();
         loadDateRequests();
         _clearControllers();
       } else {
-        Get.snackbar('Error', 'Failed to send date request');
+        print('❌ Error Response - Status: ${response.statusCode}');
+        print('❌ Error Response - Body: ${response.body}');
+        Get.back(); // Close dialog on error
+        // Try to parse error message from backend
+        try {
+          String errorMessage;
+
+          // First try to parse as JSON
+          try {
+            final errorData = jsonDecode(response.body);
+            print('Backend error response (JSON): $errorData');
+
+            if (errorData is String) {
+              errorMessage = errorData;
+            } else if (errorData is Map && errorData.containsKey('message')) {
+              errorMessage = errorData['message'];
+            } else {
+              errorMessage = 'Failed to send date request';
+            }
+          } catch (jsonError) {
+            // If JSON parsing fails, treat response.body as plain string
+            print('Response is plain string, not JSON: ${response.body}');
+            errorMessage = response.body;
+          }
+
+          // Check if it's a pending request error and show appropriate message
+          if (errorMessage.toLowerCase().contains(
+                'pending request already exists',
+              ) ||
+              errorMessage.toLowerCase().contains(
+                'already exists between users',
+              )) {
+            Get.snackbar(
+              'Request Already Pending',
+              'You already have a pending date request with this user. Please wait for their response or edit the existing request.',
+              duration: const Duration(seconds: 3),
+              backgroundColor: Colors.orange,
+              colorText: Colors.white,
+            );
+          } else {
+            Get.snackbar('Error', errorMessage);
+          }
+        } catch (e) {
+          print('❌ Error parsing response: $e');
+          Get.snackbar('Error', 'Failed to send date request');
+        }
       }
     } catch (e) {
+      print('💥 Network/Exception Error: $e');
+      Get.back(); // Close dialog on network error
       Get.snackbar('Error', 'Network error: $e');
     }
   }
@@ -237,14 +294,16 @@ class DateRequestsController extends GetxController {
       );
 
       if (response.statusCode == 200) {
+        Get.back(); // Close the edit dialog first
         Get.snackbar('Success', 'Date request updated successfully!');
         loadDateRequests(); // Reload to show updated request
-        Get.back(); // Close the edit dialog
       } else {
+        Get.back(); // Close dialog on error
         final errorData = jsonDecode(response.body);
         Get.snackbar('Error', errorData['message'] ?? 'Failed to edit request');
       }
     } catch (e) {
+      Get.back(); // Close dialog on network error
       Get.snackbar('Error', 'Network error: $e');
     } finally {
       isLoading.value = false;
@@ -316,6 +375,9 @@ class DateRequestsController extends GetxController {
   }
 
   void _showSendDateRequestDialog(int receiverId) {
+    // Remove the local check - let backend handle all validation
+    // The backend is the source of truth for duplicate detection
+
     Get.dialog(
       AlertDialog(
         title: const Text('Send Date Request'),
