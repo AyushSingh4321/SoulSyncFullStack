@@ -180,6 +180,37 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<void> deleteAccount() async {
+    try {
+      isLoading.value = true;
+      // Using reason = 1 for user-initiated account deletion
+      final response = await _apiService.delete(
+        '${ApiConstants.disableUser}?reason=1',
+      );
+      if (response.statusCode == 200) {
+        // Show success message before logout
+        Get.snackbar(
+          'Success',
+          'Account disabled successfully. It will be permanently deleted after 30 days. To re-enable, just login again.',
+          duration: const Duration(seconds: 5),
+          snackPosition: SnackPosition.TOP,
+        );
+        print('✅ User account deleted successfully');
+
+        // Wait a moment for user to see the message, then logout
+        await Future.delayed(const Duration(seconds: 3));
+        await logout();
+      } else {
+        Get.snackbar('Error', 'Failed to delete account');
+      }
+    } catch (e) {
+      print('Error Network error: $e');
+      Get.snackbar('Error', 'Network error occurred');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<void> _fetchAndStoreUserProfile() async {
     try {
       final profileResponse = await _apiService.get(ApiConstants.myProfile);

@@ -103,8 +103,45 @@ class HomeView extends GetView<HomeController> {
             leading: const Icon(Icons.delete),
             title: const Text('Delete Account'),
             onTap: () {
-              // TODO: Implement delete account
-              Get.back();
+              Get.defaultDialog(
+                title: 'Delete Account',
+                middleText: 'Are you sure you want to delete your account?',
+                confirm: Obx(
+                  () => ElevatedButton(
+                    onPressed:
+                        authController.isLoading.value
+                            ? null
+                            : () async {
+                              await authController.deleteAccount().then((_) {
+                                Get.back(); // Close the dialog
+                              });
+                            },
+                    child:
+                        authController.isLoading.value
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : const Text('Delete'),
+                  ),
+                ),
+                cancel: Obx(
+                  () => TextButton(
+                    onPressed:
+                        authController.isLoading.value
+                            ? null
+                            : () => Get.back(),
+                    child:
+                        authController.isLoading.value
+                            ? Text(
+                              'Cancel',
+                              style: TextStyle(color: Colors.grey[400]),
+                            )
+                            : const Text('Cancel'),
+                  ),
+                ),
+              );
             },
           ),
         ],
