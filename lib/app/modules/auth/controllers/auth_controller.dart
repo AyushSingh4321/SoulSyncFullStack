@@ -44,20 +44,32 @@ class AuthController extends GetxController {
   }
 
   Future<void> sendOtp() async {
-    if (emailController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter email');
+    // if (emailController.text.isEmpty) {
+    //   Get.snackbar('Error', 'Please enter email');
+    //   return;
+    // }
+    if (emailController.text.isEmpty || usernameController.text.isEmpty) {
+      Get.snackbar('Error', 'Please enter both email and username');
       return;
     }
 
     try {
       isLoading.value = true;
-      final response = await _apiService.get(
-        '${ApiConstants.sendOtp}/${emailController.text}',
+      // final response = await _apiService.get(
+      //   '${ApiConstants.sendOtp}/${emailController.text}',
+      // );
+      final response = await _apiService.post(
+        ApiConstants.sendOtp, // Keep same constant
+        body: {
+          'email': emailController.text,
+          'username': usernameController.text,
+        },
       );
-
       if (response.statusCode == 200) {
         showOtpField.value = true;
         Get.snackbar('Success', 'OTP sent to your email');
+      } else if (response.statusCode == 409) {
+        Get.snackbar('Error', response.body);
       } else {
         Get.snackbar('Error', 'Failed to send OTP');
       }

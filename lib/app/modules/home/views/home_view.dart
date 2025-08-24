@@ -5,11 +5,13 @@ import 'package:soulsync_frontend/app/modules/auth/controllers/auth_controller.d
 import 'package:soulsync_frontend/app/modules/home/controllers/home_controller.dart';
 import 'package:soulsync_frontend/app/modules/chat/controllers/chat_controller.dart';
 import 'package:soulsync_frontend/app/data/models/user_model.dart';
+import 'package:soulsync_frontend/app/modules/profile/controllers/profile_controller.dart';
 import 'package:soulsync_frontend/app/routes/app_routes.dart';
 
 class HomeView extends GetView<HomeController> {
   HomeView({super.key});
   final authController = Get.find<AuthController>();
+  final profileController = Get.find<ProfileController>();
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +160,17 @@ class HomeView extends GetView<HomeController> {
       final user = controller.users[controller.currentUserIndex.value];
 
       return GestureDetector(
-        onTap: () => controller.viewUserDetails(user),
+        onTap: () {
+          if (!profileController.isFormValid) {
+            Get.snackbar(
+              'Incomplete Profile',
+              'Please complete your profile to view user details.',
+              snackPosition: SnackPosition.TOP,
+            );
+            return;
+          }
+          controller.viewUserDetails(user);
+        },
         child: Container(
           margin: const EdgeInsets.all(16),
           child: Card(
@@ -230,6 +242,14 @@ class HomeView extends GetView<HomeController> {
                           ),
                           onSelected: (value) {
                             if (value == 'report') {
+                              if (!profileController.isFormValid) {
+                                Get.snackbar(
+                                  'Incomplete Profile',
+                                  'Please complete your profile to report ${user.name ?? 'this user'}.',
+                                  snackPosition: SnackPosition.TOP,
+                                );
+                                return;
+                              }
                               _showReportDialog(context, user);
                             }
                           },
@@ -323,7 +343,17 @@ class HomeView extends GetView<HomeController> {
                       ),
                       FloatingActionButton(
                         heroTag: 'like',
-                        onPressed: () => controller.likeUser(user.id!),
+                        onPressed: () {
+                          if (!profileController.isFormValid) {
+                            Get.snackbar(
+                              'Incomplete Profile',
+                              'Please complete your profile to like ${user.name ?? 'this user'}.',
+                              snackPosition: SnackPosition.TOP,
+                            );
+                            return;
+                          }
+                          controller.likeUser(user.id!);
+                        },
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         child: const Icon(Icons.favorite, color: Colors.white),
                       ),

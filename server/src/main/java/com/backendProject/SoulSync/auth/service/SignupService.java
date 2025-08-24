@@ -19,13 +19,14 @@ public class SignupService
     private PasswordEncoder passwordEncoder;
 
     public String registerUserAndReturnToken(SignupRequestDto dto) {
-        if (repo.existsByUsername(dto.getUsername())) {
-            throw new UserAlreadyExistsException("Username is already taken.");
-        }
-
-        if (repo.existsByEmail(dto.getEmail())) {
-            throw new UserAlreadyExistsException("Email is already in use.");
-        }
+//        ALREADY CHECKED IN OTP CONTROLLER
+//        if (repo.existsByUsername(dto.getUsername())) {
+//            throw new UserAlreadyExistsException("Username is already taken.");
+//        }
+//
+//        if (repo.existsByEmail(dto.getEmail())) {
+//            throw new UserAlreadyExistsException("Email is already in use.");
+//        }
         try {
             UserModel user = new UserModel();
             user.setUsername(dto.getUsername());

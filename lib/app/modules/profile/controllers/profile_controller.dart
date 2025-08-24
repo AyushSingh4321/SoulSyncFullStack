@@ -41,7 +41,7 @@ class ProfileController extends GetxController {
     super.onInit();
     loadProfile();
   }
-
+  bool get isFormValid => _validateForm();
   Future<void> loadProfile() async {
     try {
       isLoading.value = true;
