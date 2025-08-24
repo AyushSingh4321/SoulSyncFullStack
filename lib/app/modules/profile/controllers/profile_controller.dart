@@ -46,7 +46,7 @@ class ProfileController extends GetxController {
     try {
       isLoading.value = true;
       final response = await _apiService.get(ApiConstants.myProfile);
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         user.value = UserModel.fromJson(data);
@@ -71,7 +71,7 @@ class ProfileController extends GetxController {
     heightController.text = currentUser.height?.toString() ?? '';
     sportsController.text = currentUser.sports ?? '';
     gamesController.text = currentUser.games ?? '';
-    
+
     selectedGender.value = currentUser.gender;
     selectedRelationshipType.value = currentUser.relationshipType;
     goesGym.value = currentUser.goesGym;
@@ -81,23 +81,102 @@ class ProfileController extends GetxController {
     smoke.value = currentUser.smoke;
   }
 
+  bool _validateForm() {
+    // Check required fields
+    if (nameController.text.trim().isEmpty) {
+      Get.snackbar('Validation Error', 'Name is required');
+      return false;
+    }
+
+    if (ageController.text.trim().isEmpty) {
+      Get.snackbar('Validation Error', 'Age is required');
+      return false;
+    }
+
+    if (selectedGender.value == null) {
+      Get.snackbar('Validation Error', 'Gender is required');
+      return false;
+    }
+
+    if (locationController.text.trim().isEmpty) {
+      Get.snackbar('Validation Error', 'Location is required');
+      return false;
+    }
+
+    if (heightController.text.trim().isEmpty) {
+      Get.snackbar('Validation Error', 'Height is required');
+      return false;
+    }
+
+    if (bioController.text.trim().isEmpty) {
+      Get.snackbar('Validation Error', 'Bio is required');
+      return false;
+    }
+
+    if (interestsController.text.trim().isEmpty) {
+      Get.snackbar('Validation Error', 'Interests are required');
+      return false;
+    }
+
+    if (selectedRelationshipType.value == null) {
+      Get.snackbar('Validation Error', 'Relationship type is required');
+      return false;
+    }
+
+    // Validate profile image is required
+    if (selectedImageFile.value == null &&
+        (user.value?.profileImageUrl == null ||
+            user.value!.profileImageUrl!.isEmpty)) {
+      Get.snackbar('Validation Error', 'Profile image is required');
+      return false;
+    }
+    // Validate age is a valid number
+    final age = int.tryParse(ageController.text.trim());
+    if (age == null || age < 18 || age > 100) {
+      Get.snackbar(
+        'Validation Error',
+        'Please enter a valid age between 18 and 100',
+      );
+      return false;
+    }
+
+    // Validate height is a valid number
+    final height = double.tryParse(heightController.text.trim());
+    if (height == null || height < 100 || height > 250) {
+      Get.snackbar(
+        'Validation Error',
+        'Please enter a valid height between 100 and 250 cm',
+      );
+      return false;
+    }
+
+    return true;
+  }
+
   Future<void> updateProfile() async {
     try {
+      // Validate form before proceeding
+      if (!_validateForm()) {
+        return;
+      }
+
       isLoading.value = true;
-      
+
       String? imageUrl;
-      
+
       // Upload image to Cloudinary if a new image is selected
       if (selectedImageFile.value != null) {
         isUploadingImage.value = true;
-        imageUrl = await _cloudinaryService.uploadImageToCloudinary(selectedImageFile.value!);
+        imageUrl = await _cloudinaryService.uploadImageToCloudinary(
+          selectedImageFile.value!,
+        );
         if (imageUrl == null) {
           Get.snackbar('Error', 'Failed to upload image');
           return;
         }
         isUploadingImage.value = false;
       }
-      
+
       final profileData = {
         'name': nameController.text,
         'age': int.tryParse(ageController.text),
@@ -131,8 +210,19 @@ class ProfileController extends GetxController {
       if (response.statusCode == 200) {
         // Update local user data
         await loadProfile();
-        Get.snackbar('Success', 'Profile updated successfully');
-        Get.back();
+        Get.back(); // Back to profile page
+
+        // Show snackbar after navigation is complete
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.snackbar(
+            'Success',
+            'Profile updated successfully',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 2),
+          );
+        });
       } else {
         Get.snackbar('Error', 'Failed to update profile');
       }
@@ -156,7 +246,7 @@ class ProfileController extends GetxController {
         imageQuality: 70,
         maxWidth: 800,
       );
-      
+
       if (image != null) {
         selectedImageFile.value = File(image.path);
       }
@@ -173,7 +263,7 @@ class ProfileController extends GetxController {
         imageQuality: 70,
         maxWidth: 800,
       );
-      
+
       if (image != null) {
         selectedImageFile.value = File(image.path);
       }
@@ -195,10 +285,7 @@ class ProfileController extends GetxController {
           children: [
             const Text(
               'Select Profile Photo',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Row(
@@ -244,19 +331,10 @@ class ProfileController extends GetxController {
               color: Colors.blue.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              size: 32,
-              color: Colors.blue,
-            ),
+            child: Icon(icon, size: 32, color: Colors.blue),
           ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
     );

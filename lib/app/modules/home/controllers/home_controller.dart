@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:soulsync_frontend/app/core/constants/api_constants.dart';
 import 'package:soulsync_frontend/app/data/services/api_service.dart';
 import 'package:soulsync_frontend/app/data/models/user_model.dart';
+import 'package:soulsync_frontend/app/modules/chat/controllers/chat_controller.dart';
 import 'package:soulsync_frontend/app/routes/app_routes.dart';
 
 class HomeController extends GetxController {
@@ -110,6 +111,10 @@ class HomeController extends GetxController {
 
   void changeTab(int index) {
     currentTabIndex.value = index;
+    if (index == 1) { // Chat tab
+      final chatController = Get.find<ChatController>();
+      chatController.refreshChatUsers();
+    }
   }
 
   Future<void> reportUser(int userId, String userName) async {

@@ -16,7 +16,10 @@ class EditProfileView extends GetView<ProfileController> {
           Obx(() => TextButton(
             onPressed: (controller.isLoading.value || controller.isUploadingImage.value) 
                 ? null 
-                : controller.updateProfile,
+                : () {
+          FocusScope.of(context).unfocus(); // Close keyboard
+          controller.updateProfile();
+        },
             child: (controller.isLoading.value || controller.isUploadingImage.value)
                 ? const SizedBox(
                     width: 20,

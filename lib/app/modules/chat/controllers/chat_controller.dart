@@ -89,6 +89,11 @@ class ChatController extends GetxController {
     }
   }
 
+  Future<void> refreshChatUsers() async {
+    await loadChatUsers();
+  }
+
+
   // Future<void> sendMessage(String content, String recipientId) async {
   //   try {
   //     final currentUserId = _storageService.userId;
