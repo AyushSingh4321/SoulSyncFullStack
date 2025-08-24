@@ -188,6 +188,8 @@ class AuthController extends GetxController {
       _webSocketService.disconnect();
       print('🔴 User set to OFFLINE after logout');
       await _storageService.clearAll();
+      isLogin.value = true;  // Force login mode
+      showOtpField.value = false;  // Hide OTP field
       _clearControllers();
       Get.offAllNamed(AppRoutes.auth);
       print('✅ User logged out successfully');
