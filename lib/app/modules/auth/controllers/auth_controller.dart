@@ -53,6 +53,11 @@ class AuthController extends GetxController {
       return;
     }
 
+    if (passwordController.text.length < 6) {
+      Get.snackbar('Error', 'Password must be at least 6 characters long');
+      return;
+    }
+
     try {
       isLoading.value = true;
       // final response = await _apiService.get(

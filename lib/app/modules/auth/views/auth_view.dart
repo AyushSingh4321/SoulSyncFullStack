@@ -70,9 +70,18 @@ class AuthView extends GetView<AuthController> {
                             if (!controller.isLogin.value) ...[
                               TextField(
                                 controller: controller.usernameController,
-                                decoration: const InputDecoration(
+                                enabled:
+                                    !controller
+                                        .showOtpField
+                                        .value, // Disable after OTP
+                                decoration: InputDecoration(
                                   labelText: 'Username',
-                                  prefixIcon: Icon(Icons.person),
+                                  prefixIcon: const Icon(Icons.person),
+                                  fillColor:
+                                      controller.showOtpField.value
+                                          ? Colors.grey[200]
+                                          : null,
+                                  filled: controller.showOtpField.value,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -81,10 +90,28 @@ class AuthView extends GetView<AuthController> {
                             // Email field
                             TextField(
                               controller: controller.emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                labelText: 'Email',
-                                prefixIcon: Icon(Icons.email),
+                              enabled:
+                                  !controller
+                                      .showOtpField
+                                      .value, // Disable after OTP
+                              keyboardType:
+                                  controller.isLogin.value
+                                      ? TextInputType.text
+                                      : TextInputType.emailAddress,
+                              decoration: InputDecoration(
+                                labelText:
+                                    controller.isLogin.value
+                                        ? 'Email or Username'
+                                        : 'Email',
+                                prefixIcon:
+                                    controller.isLogin.value
+                                        ? const Icon(Icons.person)
+                                        : const Icon(Icons.email),
+                                fillColor:
+                                    controller.showOtpField.value
+                                        ? Colors.grey[200]
+                                        : null,
+                                filled: controller.showOtpField.value,
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -92,6 +119,10 @@ class AuthView extends GetView<AuthController> {
                             // Password field
                             TextField(
                               controller: controller.passwordController,
+                              enabled:
+                                  !controller
+                                      .showOtpField
+                                      .value, // Disable after OTP
                               obscureText: controller.obscurePassword.value,
                               decoration: InputDecoration(
                                 labelText: 'Password',
@@ -103,8 +134,15 @@ class AuthView extends GetView<AuthController> {
                                         : Icons.visibility_off,
                                   ),
                                   onPressed:
-                                      controller.togglePasswordVisibility,
+                                      controller.showOtpField.value
+                                          ? null
+                                          : controller.togglePasswordVisibility,
                                 ),
+                                fillColor:
+                                    controller.showOtpField.value
+                                        ? Colors.grey[200]
+                                        : null,
+                                filled: controller.showOtpField.value,
                               ),
                             ),
 
@@ -140,7 +178,10 @@ class AuthView extends GetView<AuthController> {
                                   onPressed:
                                       controller.isLoading.value
                                           ? null
-                                          : controller.login,
+                                          : () {
+                                            FocusScope.of(context).unfocus();
+                                            controller.login();
+                                          },
                                   child:
                                       controller.isLoading.value
                                           ? const CircularProgressIndicator(
@@ -159,7 +200,10 @@ class AuthView extends GetView<AuthController> {
                                     onPressed:
                                         controller.isLoading.value
                                             ? null
-                                            : controller.sendOtp,
+                                            : () {
+                                                FocusScope.of(context).unfocus();
+                                                controller.sendOtp();
+                                              },
                                     child:
                                         controller.isLoading.value
                                             ? const CircularProgressIndicator(
@@ -176,7 +220,10 @@ class AuthView extends GetView<AuthController> {
                                     onPressed:
                                         controller.isLoading.value
                                             ? null
-                                            : controller.validateOtp,
+                                            : () {
+                                                FocusScope.of(context).unfocus();
+                                                controller.validateOtp();
+                                              },
                                     child:
                                         controller.isLoading.value
                                             ? const CircularProgressIndicator(
