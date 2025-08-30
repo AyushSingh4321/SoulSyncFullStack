@@ -146,6 +146,43 @@ class AuthView extends GetView<AuthController> {
                               ),
                             ),
 
+                            const SizedBox(height: 16),
+                            // Confirm Password field
+                            if (!controller.isLogin.value) ...[
+                              TextField(
+                                key: const Key('confirmPasswordField'),
+                                controller:
+                                    controller.confirmPasswordController,
+                                enabled:
+                                    !controller
+                                        .showOtpField
+                                        .value, // Disable after OTP
+                                obscureText:
+                                    controller.obscureConfirmPassword.value,
+                                decoration: InputDecoration(
+                                  labelText: 'Confirm Password',
+                                  prefixIcon: const Icon(Icons.lock),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      controller.obscureConfirmPassword.value
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                    ),
+                                    onPressed:
+                                        controller.showOtpField.value
+                                            ? null
+                                            : controller
+                                                .toggleConfirmPasswordVisibility,
+                                  ),
+                                  fillColor:
+                                      controller.showOtpField.value
+                                          ? Colors.grey[200]
+                                          : null,
+                                  filled: controller.showOtpField.value,
+                                ),
+                              ),
+                            ],
+
                             // OTP field (only for signup when OTP is sent)
                             if (!controller.isLogin.value &&
                                 controller.showOtpField.value) ...[
@@ -201,9 +238,9 @@ class AuthView extends GetView<AuthController> {
                                         controller.isLoading.value
                                             ? null
                                             : () {
-                                                FocusScope.of(context).unfocus();
-                                                controller.sendOtp();
-                                              },
+                                              FocusScope.of(context).unfocus();
+                                              controller.sendOtp();
+                                            },
                                     child:
                                         controller.isLoading.value
                                             ? const CircularProgressIndicator(
@@ -221,9 +258,9 @@ class AuthView extends GetView<AuthController> {
                                         controller.isLoading.value
                                             ? null
                                             : () {
-                                                FocusScope.of(context).unfocus();
-                                                controller.validateOtp();
-                                              },
+                                              FocusScope.of(context).unfocus();
+                                              controller.validateOtp();
+                                            },
                                     child:
                                         controller.isLoading.value
                                             ? const CircularProgressIndicator(

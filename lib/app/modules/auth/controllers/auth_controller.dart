@@ -15,6 +15,7 @@ class AuthController extends GetxController {
   // Form controllers
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
   final usernameController = TextEditingController();
   final otpController = TextEditingController();
 
@@ -23,6 +24,7 @@ class AuthController extends GetxController {
   final isLogin = true.obs;
   final showOtpField = false.obs;
   final obscurePassword = true.obs;
+  final obscureConfirmPassword = true.obs;
 
   @override
   void onInit() {
@@ -43,6 +45,10 @@ class AuthController extends GetxController {
     obscurePassword.value = !obscurePassword.value;
   }
 
+  void toggleConfirmPasswordVisibility() {
+    obscureConfirmPassword.value = !obscureConfirmPassword.value;
+  }
+
   Future<void> sendOtp() async {
     // if (emailController.text.isEmpty) {
     //   Get.snackbar('Error', 'Please enter email');
@@ -55,6 +61,11 @@ class AuthController extends GetxController {
 
     if (passwordController.text.length < 6) {
       Get.snackbar('Error', 'Password must be at least 6 characters long');
+      return;
+    }
+
+    if(passwordController.text != confirmPasswordController.text) {
+      Get.snackbar('Error', 'Passwords do not match');
       return;
     }
 
@@ -250,6 +261,7 @@ class AuthController extends GetxController {
     emailController.clear();
     passwordController.clear();
     usernameController.clear();
+    confirmPasswordController.clear();
     otpController.clear();
   }
 
@@ -259,6 +271,7 @@ class AuthController extends GetxController {
     passwordController.dispose();
     usernameController.dispose();
     otpController.dispose();
+    confirmPasswordController.dispose();
     super.onClose();
   }
 }
