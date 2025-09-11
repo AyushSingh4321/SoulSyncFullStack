@@ -16,18 +16,18 @@ public class OtpController
     private UserRepo userRepo;
     @Autowired
     private OtpService otpService;
-    // @GetMapping("/sendotp/{email}")
-    // public ResponseEntity<String> sendOtp(@PathVariable String email)
-    // {
-    //     try {
-    //         otpService.SendOtpToAdmin(email);
-    //         return ResponseEntity.ok("OTP sent to admin");
-    //     }
-    //     catch (Exception e)
-    //     {
-    //         return ResponseEntity.status(500).body(e.getMessage()+ ": OTP not sent");
-    //     }
-    // }
+     @GetMapping("/resendotp/{email}")
+     public ResponseEntity<String> sendOtp(@PathVariable String email)
+     {
+         try {
+             otpService.SendOtpToAdmin(email);
+             return ResponseEntity.ok("OTP sent to admin");
+         }
+         catch (Exception e)
+         {
+             return ResponseEntity.status(500).body(e.getMessage()+ ": OTP not sent");
+         }
+     }
     
     // REPLACE your existing @GetMapping("/sendotp/{email}") with this:
     @PostMapping("/sendotp")
