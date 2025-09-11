@@ -27,6 +27,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(request ->
                         request.requestMatchers("/api/auth/**",
+                                "/api/test/**",
                                 "/chat-client.html",
                                 "/static/**",
                                 "/ws/**",

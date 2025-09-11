@@ -29,18 +29,18 @@ public class OtpService
     }
     @Autowired
     private StringRedisTemplate redisTemplate;
-
-    private static final long OTP_EXPIRATION_MINUTES = 1;
+    private static final String OTP_KEY_PREFIX = "OTP:";
+    private static final long OTP_EXPIRATION_MINUTES = 2;
 
     public void saveOtp(String email, String otp) {
-        redisTemplate.opsForValue().set(email, otp, OTP_EXPIRATION_MINUTES, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(OTP_KEY_PREFIX +email, otp, OTP_EXPIRATION_MINUTES, TimeUnit.MINUTES);
     }
 
     public String getOtp(String email) {
-        return redisTemplate.opsForValue().get(email);
+        return redisTemplate.opsForValue().get(OTP_KEY_PREFIX+email);
     }
 
     public void deleteOtp(String email) {
-        redisTemplate.delete(email);
+        redisTemplate.delete(OTP_KEY_PREFIX+email);
     }
 }
