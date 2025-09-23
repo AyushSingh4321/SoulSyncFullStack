@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:soulsync_frontend/app/core/constants/api_constants.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import 'package:get/get.dart';
 import 'package:soulsync_frontend/app/data/services/storage_service.dart';
@@ -16,7 +17,8 @@ class WebSocketService extends GetxService {
 
     _stompClient = StompClient(
       config: StompConfig(
-        url: 'ws://10.0.2.2:8080/ws',
+        // url: 'ws://10.0.2.2:8080/ws',
+        url: '${ApiConstants.wsUrl}',
         onConnect: onConnect,
         reconnectDelay: const Duration(seconds: 5),
         beforeConnect: () async {

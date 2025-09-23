@@ -6,6 +6,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -16,8 +18,10 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
-    Dotenv dotenv = Dotenv.load();
-    private String secretKey = dotenv.get("JWT_SECRET");
+    @Value("${jwt.secret}")
+    private String secretKey;
+    // Dotenv dotenv = Dotenv.load();
+    // private String secretKey = dotenv.get("JWT_SECRET");
     private static final long JWT_EXPIRATION_MS = 1000L * 60 * 60 * 24 * 30;
     public String generateToken(String email) {
 //        System.out.println("********************************"+secretKey);
