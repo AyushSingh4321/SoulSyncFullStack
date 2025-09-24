@@ -19,14 +19,17 @@ jobs:
           for attempt in $(seq 1 $max_retries); do
             echo "Attempt $attempt of $max_retries"
             
-            response=$(curl -s -w "%{http_code}" --max-time 30 -X DELETE "https://soulsyncbackend.onrender.com/api/user/deleteUserDisabledAccounts")
-            http_code=$(echo "$response" | tail -n1)
-            body=$(echo "$response" | sed '$d')
+            # Store response in temp file to separate body from status code
+            temp_file=$(mktemp)
+            http_code=$(curl -s -w "%{http_code}" --max-time 30 -o "$temp_file" -X DELETE "https://soulsyncbackend.onrender.com/api/user/deleteUserDisabledAccounts")
+            response=$(cat "$temp_file")
+            rm "$temp_file"
             
             echo "HTTP Status: $http_code"
-            echo "Response: $body"
+            echo "Response: $response"
             
-            if [ "$http_code" -eq 200 ]; then
+            # Check if http_code is exactly 200
+            if [ "$http_code" = "200" ]; then
               echo "Success! Deleted users endpoint called successfully"
               exit 0
             else
