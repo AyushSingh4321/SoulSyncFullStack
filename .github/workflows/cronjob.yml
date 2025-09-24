@@ -1,0 +1,45 @@
+name: Delete Disabled Users
+
+on:
+  schedule:
+    # Runs at 5:00 AM and 5:00 PM IST (23:30 & 11:30 UTC)
+    - cron: "30 23,11 * * *"
+  workflow_dispatch: # optional: allows manual run from Actions tab
+
+jobs:
+  call-delete-endpoint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call DELETE endpoint with retries
+        run: |
+          max_retries=3
+          retry_delay=10
+          
+          for attempt in $(seq 1 $max_retries); do
+            echo "Attempt $attempt of $max_retries"
+            
+            response=$(curl -s -w "%{http_code}" --max-time 30 -X DELETE "https://soulsyncbackend.onrender.com/api/user/deleteUserDisabledAccounts")
+            http_code=$(echo "$response" | tail -n1)
+            body=$(echo "$response" | sed '$d')
+            
+            echo "HTTP Status: $http_code"
+            echo "Response: $body"
+            
+            if [ "$http_code" -eq 200 ]; then
+              echo "Success! Deleted users endpoint called successfully"
+              exit 0
+            else
+              echo "Attempt $attempt failed with status $http_code"
+              
+              if [ $attempt -lt $max_retries ]; then
+                echo "Waiting $retry_delay seconds before retry..."
+                sleep $retry_delay
+                # Exponential backoff: double the delay for next attempt
+                retry_delay=$((retry_delay * 2))
+              fi
+            fi
+          done
+          
+          echo "All $max_retries attempts failed"
+          exit 1
