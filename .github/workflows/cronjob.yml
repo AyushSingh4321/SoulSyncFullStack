@@ -11,17 +11,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Call DELETE endpoint with retries
+      - name: Wake up backend and call DELETE endpoint
         run: |
-          max_retries=3
-          retry_delay=10
+          max_retries=5
+          retry_delay=30
           
+          echo "Step 1: Waking up the backend service..."
+          # First, wake up the backend with a simple GET request (ignore response)
+          curl -s --max-time 60 "https://soulsyncbackend.onrender.com/api/user/users" || echo "Wake-up call completed"
+          
+          echo "Waiting 45 seconds for backend to fully start..."
+          sleep 45
+          
+          echo "Step 2: Calling delete endpoint..."
           for attempt in $(seq 1 $max_retries); do
             echo "Attempt $attempt of $max_retries"
             
             # Store response in temp file to separate body from status code
             temp_file=$(mktemp)
-            http_code=$(curl -s -w "%{http_code}" --max-time 30 -o "$temp_file" -X DELETE "https://soulsyncbackend.onrender.com/api/user/deleteUserDisabledAccounts")
+            http_code=$(curl -s -w "%{http_code}" --max-time 90 -o "$temp_file" -X DELETE "https://soulsyncbackend.onrender.com/api/user/deleteUserDisabledAccounts")
             response=$(cat "$temp_file")
             rm "$temp_file"
             
@@ -38,8 +46,7 @@ jobs:
               if [ $attempt -lt $max_retries ]; then
                 echo "Waiting $retry_delay seconds before retry..."
                 sleep $retry_delay
-                # Exponential backoff: double the delay for next attempt
-                retry_delay=$((retry_delay * 2))
+                # Keep retry delay constant for Render (cold starts are unpredictable)
               fi
             fi
           done
