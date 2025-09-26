@@ -9,6 +9,7 @@ on:
 jobs:
   call-delete-endpoint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # Prevent infinite hanging
 
     steps:
       - name: Wake up backend and call DELETE endpoint
@@ -17,26 +18,37 @@ jobs:
           retry_delay=30
           
           echo "Step 1: Waking up the backend service..."
-          # First, wake up the backend with a simple GET request (ignore response)
           curl -s --max-time 60 "https://soulsyncbackend.onrender.com/api/user/users" || echo "Wake-up call completed"
           
-          echo "Waiting 45 seconds for backend to fully start..."
-          sleep 45
+          echo "Step 2: Waiting for backend to be ready..."
+          # Smart wait - check if backend is responding instead of blind 45s wait
+          ready=false
+          for check in {1..18}; do  # Check for up to 3 minutes (18 * 10s)
+            echo "Readiness check $check/18..."
+            if curl -s --max-time 10 "https://soulsyncbackend.onrender.com/api/user/users" > /dev/null 2>&1; then
+              echo "Backend is ready!"
+              ready=true
+              break
+            fi
+            sleep 10
+          done
           
-          echo "Step 2: Calling delete endpoint..."
+          if [ "$ready" = false ]; then
+            echo "Backend never became ready. Proceeding anyway..."
+          fi
+          
+          echo "Step 3: Calling delete endpoint..."
           for attempt in $(seq 1 $max_retries); do
             echo "Attempt $attempt of $max_retries"
             
-            # Store response in temp file to separate body from status code
             temp_file=$(mktemp)
-            http_code=$(curl -s -w "%{http_code}" --max-time 90 -o "$temp_file" -X DELETE "https://soulsyncbackend.onrender.com/api/user/deleteUserDisabledAccounts")
+            http_code=$(curl -s -w "%{http_code}" --connect-timeout 30 --max-time 120 -o "$temp_file" -X DELETE "https://soulsyncbackend.onrender.com/api/user/deleteUserDisabledAccounts")
             response=$(cat "$temp_file")
             rm "$temp_file"
             
             echo "HTTP Status: $http_code"
             echo "Response: $response"
             
-            # Check if http_code is exactly 200
             if [ "$http_code" = "200" ]; then
               echo "Success! Deleted users endpoint called successfully"
               exit 0
@@ -46,7 +58,6 @@ jobs:
               if [ $attempt -lt $max_retries ]; then
                 echo "Waiting $retry_delay seconds before retry..."
                 sleep $retry_delay
-                # Keep retry delay constant for Render (cold starts are unpredictable)
               fi
             fi
           done
