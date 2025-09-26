@@ -69,7 +69,7 @@ public class UserService {
         }
 
     }
-
+//   No use of this method now only used for cron job might be useful in future
     public List<UserModel> findConnectedUsers() {
         return repo.findAllByStatus(UserStatus.ONLINE);
     }

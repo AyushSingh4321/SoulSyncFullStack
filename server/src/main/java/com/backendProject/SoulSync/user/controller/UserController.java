@@ -20,7 +20,7 @@ import java.util.List;
 public class UserController {
     @Autowired
     UserService userService;
-
+// No use of this method now only used for cron job might be useful in future
     @GetMapping("/users")
     public ResponseEntity<List<UserModel>> findConnectedUsers()
     {
