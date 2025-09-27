@@ -69,8 +69,34 @@ public interface UserRepo extends JpaRepository<UserModel, Integer> {
 
     List<UserModel> findAllByStatus(UserStatus userStatus);
 
+    // Query to find users that will be deleted
+    @Query("SELECT u FROM UserModel u WHERE u.deactivationReason = 1 AND u.deactivatedAt < :cutoffDate")
+    List<UserModel> findUsersToDelete(@Param("cutoffDate") LocalDateTime cutoffDate);
+
+    // Remove date requests where users are either sender or receiver
     @Modifying
     @Transactional
-    @Query("DELETE FROM UserModel u WHERE u.deactivationReason = 1 AND u.deactivatedAt < :cutoffDate")
-    int deleteOldDeactivatedUsers(@Param("cutoffDate") LocalDateTime cutoffDate);
+    @Query(value = "DELETE FROM date_request_model WHERE sender_id IN :userIds OR receiver_id IN :userIds", nativeQuery = true)
+    void removeDateRequestsForUsers(@Param("userIds") List<Integer> userIds);
+
+    // Remove user likes relationships (required because JPA deleteAllById doesn't always handle @ManyToMany cleanup)
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM user_likes WHERE liker_id IN :userIds OR liked_id IN :userIds", nativeQuery = true)
+    void removeLikesForUsers(@Param("userIds") List<Integer> userIds);
+
+    // Remove chat messages where users are sender or recipient (using string IDs)
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM chat_message WHERE sender_id IN :userIds OR recipient_id IN :userIds", nativeQuery = true)
+    void removeChatMessagesForUsers(@Param("userIds") List<String> userIds);
+
+    // Remove chat rooms where users are sender or recipient (using string IDs)
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM chat_room_model WHERE sender_id IN :userIds OR recipient_id IN :userIds", nativeQuery = true)
+    void removeChatRoomsForUsers(@Param("userIds") List<String> userIds);
+
+    // Note: Using JPA's deleteAllById instead of JPQL DELETE to ensure proper cascade handling
+    // The actual deletion will be done via UserService using repository.deleteAllById(userIds)
 }

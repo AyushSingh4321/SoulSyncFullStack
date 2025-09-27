@@ -483,7 +483,41 @@ public class UserService {
     public int deleteUsersWithReason1OlderThan30Days() {
         LocalDateTime cutoffDate = LocalDateTime.now().minusDays(30);
 //        LocalDateTime cutoffDate = LocalDateTime.now().minusMinutes(5); //for testing purposes
-        return repo.deleteOldDeactivatedUsers(cutoffDate);
+        
+        // First, get the list of users to be deleted
+        List<UserModel> usersToDelete = repo.findUsersToDelete(cutoffDate);
+        
+        if (usersToDelete.isEmpty()) {
+            return 0;
+        }
+        
+        // Extract user IDs for different cleanup operations
+        List<Integer> userIds = usersToDelete.stream()
+            .map(UserModel::getId)
+            .collect(Collectors.toList());
+        
+        List<String> userIdStrings = usersToDelete.stream()
+            .map(user -> String.valueOf(user.getId()))
+            .collect(Collectors.toList());
+        
+        // Delete in proper order to handle foreign key constraints:
+        
+        // 1. Remove chat messages (orphaned String references - no JPA relationship)
+        repo.removeChatMessagesForUsers(userIdStrings);
+        
+        // 2. Remove chat rooms (orphaned String references - no JPA relationship)
+        repo.removeChatRoomsForUsers(userIdStrings);
+        
+        // 3. Remove date requests (FK constraints - no JPA relationship in UserModel)
+        repo.removeDateRequestsForUsers(userIds);
+        
+        // 4. Remove user likes (FK constraints - JPA deleteAllById doesn't always handle @ManyToMany cleanup)
+        repo.removeLikesForUsers(userIds);
+        
+        // 5. Finally delete users - now safe from all foreign key constraints
+        repo.deleteAllById(userIds);
+        
+        return usersToDelete.size();
     }
     public List<ChatUserDto> getChattedUsers() {
         UserModel currentUser = getCurrentManagedUser();
